@@ -3,6 +3,8 @@ name: QA Agent 1 - Code Quality
 on:
   pull_request:
     branches: [main]
+    types: [labeled]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -13,6 +15,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check if AI review is requested
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            LABELS='${{ toJson(github.event.pull_request.labels.*.name) }}'
+            if ! echo "$LABELS" | grep -q "ai-review"; then
+              echo "Label 'ai-review' not found. Skipping AI review."
+              exit 0
+            fi
+          fi
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
