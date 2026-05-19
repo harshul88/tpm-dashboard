@@ -1,0 +1,74 @@
+[
+  {
+    "id": "init-1",
+    "title": "Platform Microservices Migration",
+    "description": "Decompose monolith into 12 domain-aligned microservices with event-driven architecture",
+    "status": "in-progress",
+    "startDate": "2026-01-05",
+    "endDate": "2026-06-30",
+    "owner": "Alex Chen",
+    "team": "Platform",
+    "progress": 45,
+    "priority": "high"
+  },
+  {
+    "id": "init-2",
+    "title": "Zero-Trust Security Model",
+    "description": "Implement mTLS, service mesh, and least-privilege IAM across all cloud environments",
+    "status": "planned",
+    "startDate": "2026-04-01",
+    "endDate": "2026-08-31",
+    "owner": "Sarah Kim",
+    "team": "Security",
+    "progress": 10,
+    "priority": "critical"
+  },
+  {
+    "id": "init-3",
+    "title": "ML Feature Store Launch",
+    "description": "Build centralized feature store to reduce model training time by 60%",
+    "status": "at-risk",
+    "startDate": "2026-02-01",
+    "endDate": "2026-05-15",
+    "owner": "Maya Patel",
+    "team": "ML Infra",
+    "progress": 35,
+    "priority": "high"
+  },
+  {
+    "id": "init-4",
+    "title": "Self-Serve Analytics Portal",
+    "description": "Enable business teams to build custom dashboards without engineering support",
+    "status": "in-progress",
+    "startDate": "2026-01-12",
+    "endDate": "2026-04-30",
+    "owner": "James Wu",
+    "team": "Data",
+    "progress": 70,
+    "priority": "medium"
+  },
+  {
+    "id": "init-5",
+    "title": "Developer Experience Toolchain",
+    "description": "Standardize CI/CD pipelines, local dev environments, and reduce P50 deploy time to under 5 min",
+    "status": "completed",
+    "startDate": "2025-10-01",
+    "endDate": "2026-01-31",
+    "owner": "Alex Chen",
+    "team": "DevEx",
+    "progress": 100,
+    "priority": "medium"
+  },
+  {
+    "id": "init-6",
+    "title": "GDPR & Compliance Automation",
+    "description": "Automate data retention, deletion workflows, and audit logging for regulatory compliance",
+    "status": "blocked",
+    "startDate": "2026-03-01",
+    "endDate": "2026-07-31",
+    "owner": "Sarah Kim",
+    "team": "Legal Eng",
+    "progress": 15,
+    "priority": "critical"
+  }
+]

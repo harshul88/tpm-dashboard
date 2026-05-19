@@ -1,0 +1,90 @@
+[
+  {
+    "id": "TPM-001",
+    "title": "Implement OAuth2 login flow",
+    "description": "Add Google SSO support for enterprise customers",
+    "status": "done",
+    "priority": "high",
+    "assignee": "Alex Chen",
+    "storyPoints": 8,
+    "sprint": "Sprint 6",
+    "labels": ["auth", "backend"]
+  },
+  {
+    "id": "TPM-002",
+    "title": "Migrate legacy API endpoints",
+    "description": "Port v1 REST endpoints to GraphQL schema",
+    "status": "in-progress",
+    "priority": "high",
+    "assignee": "Maya Patel",
+    "storyPoints": 13,
+    "sprint": "Sprint 6",
+    "labels": ["api", "migration"]
+  },
+  {
+    "id": "TPM-003",
+    "title": "Fix memory leak in data pipeline",
+    "description": "Resolve OOM errors under heavy load in stream processor",
+    "status": "in-progress",
+    "priority": "critical",
+    "assignee": "James Wu",
+    "storyPoints": 5,
+    "sprint": "Sprint 6",
+    "labels": ["bug", "performance"]
+  },
+  {
+    "id": "TPM-004",
+    "title": "Add dark mode toggle",
+    "description": "Persist user theme preference in localStorage across sessions",
+    "status": "in-progress",
+    "priority": "medium",
+    "assignee": "Sarah Kim",
+    "storyPoints": 3,
+    "sprint": "Sprint 6",
+    "labels": ["ui", "feature"]
+  },
+  {
+    "id": "TPM-005",
+    "title": "Write integration tests for payments",
+    "description": "Cover Stripe webhook edge cases and retry logic",
+    "status": "todo",
+    "priority": "high",
+    "assignee": "Alex Chen",
+    "storyPoints": 8,
+    "sprint": "Sprint 6",
+    "labels": ["testing", "payments"]
+  },
+  {
+    "id": "TPM-006",
+    "title": "Optimize Lambda cold-start latency",
+    "description": "Reduce cold start from 3s to under 500ms using provisioned concurrency",
+    "status": "todo",
+    "priority": "medium",
+    "assignee": "Maya Patel",
+    "storyPoints": 5,
+    "sprint": "Sprint 6",
+    "labels": ["performance", "infra"]
+  },
+  {
+    "id": "TPM-007",
+    "title": "Document onboarding API",
+    "description": "Create OpenAPI spec and Postman collection for all onboarding endpoints",
+    "status": "todo",
+    "priority": "low",
+    "assignee": "Unassigned",
+    "storyPoints": 2,
+    "sprint": "Sprint 6",
+    "labels": ["docs", "api"]
+  },
+  {
+    "id": "TPM-008",
+    "title": "Set up Datadog APM tracing",
+    "description": "Instrument all microservices with distributed tracing and custom dashboards",
+    "status": "done",
+    "priority": "medium",
+    "assignee": "James Wu",
+    "storyPoints": 5,
+    "sprint": "Sprint 6",
+    "labels": ["observability", "infra"]
+  }
+]
