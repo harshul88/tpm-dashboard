@@ -1,0 +1,106 @@
+name: QA Agent 1 - Code Quality
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit for high-severity vulnerabilities
+        run: npm audit --audit-level=high
+
+      - name: Generate PR diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > pr.diff
+          echo "Diff: $(wc -l < pr.diff) lines, $(wc -c < pr.diff) bytes"
+
+      - name: Claude code review
+        id: claude_review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          SYSTEM_PROMPT="You are a senior software engineer doing a code review. Review this PR diff for: bugs, broken imports, hardcoded secrets or API keys, missing error handling, console.log statements left in, and accessibility issues. Output a markdown summary with sections: PASSED, WARNINGS, BLOCKERS. If there are any BLOCKERS, exit with code 1."
+          DIFF=$(head -c 10000 pr.diff)
+
+          PAYLOAD=$(jq -n \
+            --arg model "claude-sonnet-4-20250514" \
+            --arg system "$SYSTEM_PROMPT" \
+            --arg diff "$DIFF" \
+            '{
+              model: $model,
+              max_tokens: 2048,
+              system: $system,
+              messages: [{ role: "user", content: ("Please review this PR diff:\n\n" + $diff) }]
+            }')
+
+          RESPONSE=$(curl -sf https://api.anthropic.com/v1/messages \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "content-type: application/json" \
+            -d "$PAYLOAD")
+
+          echo "$RESPONSE" | jq -r '.content[0].text' > review.md
+          cat review.md
+
+      - name: Detect blockers
+        id: check_blockers
+        run: |
+          python3 - << 'PYEOF'
+          import re
+
+          with open('review.md') as f:
+              review = f.read()
+
+          match = re.search(r'##\s*BLOCKERS\b(.*?)(?:\n##|\Z)', review, re.DOTALL | re.IGNORECASE)
+          has_blockers = False
+          if match:
+              content = match.group(1).strip()
+              has_blockers = bool(content) and not re.match(
+                  r'^(none|n/a|no\s+blockers?)\s*$', content, re.IGNORECASE
+              )
+
+          with open('has_blockers.txt', 'w') as f:
+              f.write('true' if has_blockers else 'false')
+          PYEOF
+          echo "has_blockers=$(cat has_blockers.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Post review as PR comment
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const review = fs.readFileSync('review.md', 'utf8');
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## QA Agent 1 — Code Quality Review\n\n${review}`,
+            });
+
+      - name: Fail if blockers found
+        if: steps.check_blockers.outputs.has_blockers == 'true'
+        run: |
+          echo "Code review found BLOCKERS. See PR comment for details."
+          exit 1

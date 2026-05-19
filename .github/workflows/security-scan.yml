@@ -1,0 +1,59 @@
+name: Security Scan
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: npm audit
+        run: npm audit --audit-level=moderate
+
+      - name: Check for .env files in PR diff
+        run: |
+          ENV_FILES=$(git diff origin/${{ github.base_ref }}...HEAD --name-only \
+            | grep -E '(^|/)\.(env)(\.[^/]*)?$' \
+            | grep -v '\.env\.example$' \
+            || true)
+          if [ -n "$ENV_FILES" ]; then
+            echo "ERROR: .env file(s) detected in this PR:"
+            echo "$ENV_FILES"
+            echo "Remove them and rotate any secrets that may have been exposed."
+            exit 1
+          fi
+          echo ".env check passed — no environment files found in diff."
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:javascript
