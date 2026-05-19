@@ -1,0 +1,66 @@
+[
+  {
+    "id": "INC-001",
+    "title": "Database connection pool exhaustion",
+    "severity": "P1",
+    "opened_at": "2026-04-23T14:30:00",
+    "resolved_at": "2026-04-23T21:30:00",
+    "status": "resolved"
+  },
+  {
+    "id": "INC-002",
+    "title": "Auth service elevated error rate",
+    "severity": "P2",
+    "opened_at": "2026-04-28T09:15:00",
+    "resolved_at": "2026-04-28T10:00:00",
+    "status": "resolved"
+  },
+  {
+    "id": "INC-003",
+    "title": "Payment processing timeout cascade",
+    "severity": "P1",
+    "opened_at": "2026-05-01T03:00:00",
+    "resolved_at": "2026-05-01T11:00:00",
+    "status": "resolved"
+  },
+  {
+    "id": "INC-004",
+    "title": "Slow dashboard query response",
+    "severity": "P3",
+    "opened_at": "2026-05-05T16:45:00",
+    "resolved_at": "2026-05-05T17:05:00",
+    "status": "resolved"
+  },
+  {
+    "id": "INC-005",
+    "title": "S3 upload failures in EU-WEST-1",
+    "severity": "P2",
+    "opened_at": "2026-05-09T11:00:00",
+    "resolved_at": "2026-05-09T12:30:00",
+    "status": "resolved"
+  },
+  {
+    "id": "INC-006",
+    "title": "Redis cache eviction causing high API latency",
+    "severity": "P1",
+    "opened_at": "2026-05-14T08:00:00",
+    "resolved_at": "2026-05-14T14:00:00",
+    "status": "resolved"
+  },
+  {
+    "id": "INC-007",
+    "title": "Webhook delivery retry storm",
+    "severity": "P3",
+    "opened_at": "2026-05-16T15:30:00",
+    "resolved_at": "2026-05-16T15:45:00",
+    "status": "resolved"
+  },
+  {
+    "id": "INC-008",
+    "title": "Elevated 502s from ALB health check",
+    "severity": "P2",
+    "opened_at": "2026-05-19T09:00:00",
+    "resolved_at": null,
+    "status": "open"
+  }
+]
