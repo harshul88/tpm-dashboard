@@ -6,6 +6,7 @@
     "endDate": "2026-01-16",
     "committedPoints": 34,
     "completedPoints": 28,
+    "isActive": false,
     "bugs": 3,
     "velocity": 28
   },
@@ -16,6 +17,7 @@
     "endDate": "2026-01-30",
     "committedPoints": 38,
     "completedPoints": 36,
+    "isActive": false,
     "bugs": 1,
     "velocity": 36
   },
@@ -26,6 +28,7 @@
     "endDate": "2026-02-13",
     "committedPoints": 40,
     "completedPoints": 32,
+    "isActive": false,
     "bugs": 5,
     "velocity": 32
   },
@@ -36,6 +39,7 @@
     "endDate": "2026-02-27",
     "committedPoints": 36,
     "completedPoints": 38,
+    "isActive": false,
     "bugs": 2,
     "velocity": 38
   },
@@ -46,6 +50,7 @@
     "endDate": "2026-03-13",
     "committedPoints": 42,
     "completedPoints": 41,
+    "isActive": false,
     "bugs": 1,
     "velocity": 41
   },
@@ -53,10 +58,11 @@
     "id": "sprint-6",
     "name": "Sprint 6",
     "startDate": "2026-03-16",
-    "endDate": "2026-03-27",
+    "endDate": "2026-03-29",
     "committedPoints": 44,
-    "completedPoints": 44,
+    "completedPoints": 13,
+    "isActive": true,
     "bugs": 0,
-    "velocity": 44
+    "velocity": 13
   }
 ]
