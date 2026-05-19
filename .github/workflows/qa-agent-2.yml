@@ -55,7 +55,7 @@ jobs:
           DIFF=$(head -c 10000 pr.diff)
 
           PAYLOAD=$(jq -n \
-            --arg model "claude-sonnet-4-20250514" \
+            --arg model "claude-sonnet-4-6" \
             --arg system "$SYSTEM_PROMPT" \
             --arg diff "$DIFF" \
             '{
@@ -65,11 +65,16 @@ jobs:
               messages: [{ role: "user", content: ("Please review this PR diff against TPM standards:\n\n" + $diff) }]
             }')
 
-          RESPONSE=$(curl -sf https://api.anthropic.com/v1/messages \
+          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
             -H "content-type: application/json" \
             -d "$PAYLOAD")
+
+          if echo "$RESPONSE" | jq -e '.error' > /dev/null 2>&1; then
+            echo "API Error: $(echo $RESPONSE | jq -r '.error.message')"
+            exit 1
+          fi
 
           echo "$RESPONSE" | jq -r '.content[0].text' > review.md
           cat review.md
