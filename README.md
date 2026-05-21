@@ -160,6 +160,7 @@ Open http://localhost:5173 in your browser. The app uses static mock JSON data �
 - [x] QA Agent 1 — Claude-powered code quality reviewer
 - [x] QA Agent 2 — Claude-powered TPM standards reviewer
 - [x] GitHub Pages deployment via GitHub Actions
+- [x] AWS Control Tower landing zone with Sandbox account (`525112566317`, `us-east-1`) and IAM Identity Center SSO
 
 ### Coming Soon
 - [ ] AWS S3 + CloudFront hosting
