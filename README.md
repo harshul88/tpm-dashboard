@@ -33,6 +33,8 @@ Visualizes 8 cross-team strategic initiatives on a custom Gantt chart (Apr–Sep
 | CI/CD | ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=flat&logo=github-actions&logoColor=white) | Automated build, QA review, and deployment |
 | Hosting | ![GitHub Pages](https://img.shields.io/badge/GitHub_Pages-222222?style=flat&logo=github&logoColor=white) | Static site hosting from `dist/` |
 | AI Agents | ![Claude](https://img.shields.io/badge/Claude_Sonnet_4.6-D97757?style=flat) | Automated code quality and TPM standards review |
+| Cloud Governance | ![AWS Control Tower](https://img.shields.io/badge/AWS_Control_Tower-FF9900?style=flat&logo=amazon-aws&logoColor=white) | Landing zone with enrolled Sandbox account (`525112566317`) in `us-east-1` |
+| Identity & Access | ![IAM Identity Center](https://img.shields.io/badge/IAM_Identity_Center-FF9900?style=flat&logo=amazon-aws&logoColor=white) | SSO access management via AWS Control Tower |
 
 ---
 
@@ -73,6 +75,41 @@ Local Development
                              ▼
                     GitHub Pages
              https://harshul88.github.io/tpm-dashboard
+```
+
+---
+
+## AWS Architecture
+
+The project uses **AWS Control Tower** to establish a governed multi-account landing zone. A dedicated **Sandbox account** (`525112566317`, region `us-east-1`) is enrolled under Control Tower for all cloud infrastructure work, keeping it isolated from any production or shared-services accounts.
+
+**IAM Identity Center (SSO)** is configured at the management account level and delegates access to the Sandbox account via permission sets. Local development and CI/CD authenticate through a named SSO profile (`tpm-dashboard`) — no long-lived access keys are stored anywhere.
+
+```
+AWS Organization (Management Account)
+          │
+          │  AWS Control Tower — landing zone
+          │
+          ├── Log Archive Account
+          ├── Audit Account
+          └── Sandbox Account (525112566317)  ◄── active development
+                    │  us-east-1
+                    │
+          ┌─────────┴──────────────────────────┐
+          │                                    │
+   IAM Identity Center SSO             Future Resources
+   (permission sets per role)     S3 · CloudFront · Lambda
+                                   WAF · GuardDuty · etc.
+```
+
+**SSO profile setup:**
+```bash
+aws configure sso --profile tpm-dashboard
+# SSO start URL:  https://<org>.awsapps.com/start
+# Region:         us-east-1
+
+aws sso login --profile tpm-dashboard
+aws sts get-caller-identity --profile tpm-dashboard
 ```
 
 ---
