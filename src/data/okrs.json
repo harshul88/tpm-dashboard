@@ -1,0 +1,34 @@
+[
+  {
+    "objective": "Platform Reliability",
+    "key_results": [
+      { "title": "Achieve 99.95% uptime across all production services", "current_value": 99.91, "target_value": 99.95, "unit": "%" },
+      { "title": "Reduce P99 API latency below 200ms", "current_value": 247, "target_value": 200, "unit": "ms" },
+      { "title": "Complete microservices migration for 8 of 12 domains", "current_value": 5, "target_value": 12, "unit": "domains" }
+    ]
+  },
+  {
+    "objective": "Developer Productivity",
+    "key_results": [
+      { "title": "Cut median PR cycle time to under 24 hours", "current_value": 33, "target_value": 24, "unit": "hrs" },
+      { "title": "Reduce dev environment setup time to 15 minutes", "current_value": 22, "target_value": 15, "unit": "min" },
+      { "title": "Reach 80% developer NPS satisfaction score", "current_value": 71, "target_value": 80, "unit": "%" }
+    ]
+  },
+  {
+    "objective": "Security & Compliance",
+    "key_results": [
+      { "title": "Pass GDPR audit with zero critical findings", "current_value": 3, "target_value": 0, "unit": "findings" },
+      { "title": "Enroll 100% of services in zero-trust mTLS", "current_value": 41, "target_value": 100, "unit": "%" },
+      { "title": "Resolve all HIGH severity vulnerabilities within 72h", "current_value": 68, "target_value": 72, "unit": "hrs" }
+    ]
+  },
+  {
+    "objective": "Customer Experience",
+    "key_results": [
+      { "title": "Reduce model inference latency to under 120ms", "current_value": 198, "target_value": 120, "unit": "ms" },
+      { "title": "Increase feature adoption rate to 65%", "current_value": 48, "target_value": 65, "unit": "%" },
+      { "title": "Ship Customer Data Platform v1 by Q3", "current_value": 0, "target_value": 100, "unit": "%" }
+    ]
+  }
+]

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "RSK-001",
+    "title": "ML Feature Store vendor dependency not resolved",
+    "severity": "HIGH",
+    "initiative_id": "INI-003",
+    "description": "Third-party data pipeline vendor contract expires June 30. No replacement identified yet; blocks 3 downstream model teams."
+  },
+  {
+    "id": "RSK-002",
+    "title": "Zero-Trust rollout understaffed by 2 engineers",
+    "severity": "HIGH",
+    "initiative_id": "INI-002",
+    "description": "Security team headcount gap due to two open reqs unfilled since March. At current velocity initiative misses Q3 deadline."
+  },
+  {
+    "id": "RSK-003",
+    "title": "API Gateway migration may require breaking changes",
+    "severity": "MEDIUM",
+    "initiative_id": "INI-008",
+    "description": "Legacy auth headers used by 14 external partners. Coordinating deprecation notices and partner testing adds 3–4 weeks."
+  },
+  {
+    "id": "RSK-004",
+    "title": "GDPR audit scheduled before overhaul completes",
+    "severity": "MEDIUM",
+    "initiative_id": "INI-005",
+    "description": "External auditor scheduled June 15 but deletion workflows are only 80% complete. Risk of minor findings; no hard blocker expected."
+  },
+  {
+    "id": "RSK-005",
+    "title": "Platform migration causes transient latency spikes",
+    "severity": "MEDIUM",
+    "initiative_id": "INI-001",
+    "description": "Service mesh cutover for auth domain caused 40ms P99 regression in staging. Needs canary rollout plan before production."
+  },
+  {
+    "id": "RSK-006",
+    "title": "Analytics portal query performance on large datasets",
+    "severity": "LOW",
+    "initiative_id": "INI-004",
+    "description": "Dashboards with > 90-day windows run >8s on current read replicas. Partitioning fix queued for next sprint; UX workaround in place."
+  }
+]
