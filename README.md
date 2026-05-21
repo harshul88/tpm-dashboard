@@ -162,9 +162,11 @@ Open http://localhost:5173 in your browser. The app uses static mock JSON data â
 - [x] GitHub Pages deployment via GitHub Actions
 - [x] AWS Control Tower landing zone with Sandbox account (`525112566317`, `us-east-1`) and IAM Identity Center SSO
 
-### Coming Soon
+### Next Up
 - [ ] AWS S3 + CloudFront hosting
 - [ ] 3 environments (dev / staging / production)
+
+### Coming Soon
 - [ ] Custom domain
 - [ ] AWS WAF + security headers
 - [ ] SAST / DAST scanning
