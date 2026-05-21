@@ -1,0 +1,8 @@
+[
+  { "team": "Platform",  "allocated_pct": 95  },
+  { "team": "Security",  "allocated_pct": 110 },
+  { "team": "ML Infra",  "allocated_pct": 88  },
+  { "team": "Data",      "allocated_pct": 80  },
+  { "team": "Legal Eng", "allocated_pct": 72  },
+  { "team": "DevEx",     "allocated_pct": 65  }
+]
