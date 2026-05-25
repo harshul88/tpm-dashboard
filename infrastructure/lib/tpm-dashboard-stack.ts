@@ -115,39 +115,12 @@ export class TpmDashboardStack extends cdk.Stack {
     );
 
     // =========================================================================
-    // ORIGIN ACCESS CONTROLS (OAC)
-    // OAC is the modern replacement for OAI. It signs S3 requests with SigV4
-    // so CloudFront can read from private buckets without public access.
-    // One OAC per distribution — AWS recommends not sharing OACs across distros.
-    // =========================================================================
-
-    const stagingOac = new cloudfront.CfnOriginAccessControl(this, 'StagingOAC', {
-      originAccessControlConfig: {
-        name: 'tpm-dashboard-staging-oac',
-        description: 'OAC for TPM Dashboard staging',
-        originAccessControlOriginType: 's3',
-        signingBehavior: 'always',
-        signingProtocol: 'sigv4',
-      },
-    });
-
-    const prodOac = new cloudfront.CfnOriginAccessControl(this, 'ProdOAC', {
-      originAccessControlConfig: {
-        name: 'tpm-dashboard-prod-oac',
-        description: 'OAC for TPM Dashboard production',
-        originAccessControlOriginType: 's3',
-        signingBehavior: 'always',
-        signingProtocol: 'sigv4',
-      },
-    });
-
-    // =========================================================================
     // CLOUDFRONT DISTRIBUTIONS
     // Staging and prod each get their own distribution.
-    //
-    // OAC note: CDK's S3Origin automatically creates an OAI. We use the L1
-    // escape hatch to clear the OAI and inject our OAC id instead, then add
-    // the correct bucket policy that gates access on the distribution ARN.
+    // S3BucketOrigin.withOriginAccessControl() is the current L2 API — it
+    // creates an OAC, sets the correct SigV4-signed S3 origin config, and adds
+    // the bucket policy scoped to this distribution's ARN automatically.
+    // No manual OAC constructs or L1 escape hatches required.
     // =========================================================================
 
     const makeDistribution = (
@@ -156,9 +129,7 @@ export class TpmDashboardStack extends cdk.Stack {
     ): cloudfront.Distribution =>
       new cloudfront.Distribution(this, id, {
         defaultBehavior: {
-          // S3Origin sets up the correct regional S3 endpoint format.
-          // The OAI it creates will be replaced with OAC below.
-          origin: new origins.S3Origin(bucket),
+          origin: origins.S3BucketOrigin.withOriginAccessControl(bucket),
           viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
           cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
           responseHeadersPolicy: securityHeadersPolicy,
@@ -178,45 +149,6 @@ export class TpmDashboardStack extends cdk.Stack {
 
     const stagingDistribution = makeDistribution(stagingBucket, 'StagingDistribution');
     const prodDistribution = makeDistribution(prodBucket, 'ProdDistribution');
-
-    // Wire up OAC for each distribution: clear the auto-created OAI and inject
-    // the OAC id, then grant the CloudFront service principal bucket read access
-    // scoped to that specific distribution ARN.
-    const applyOac = (
-      distribution: cloudfront.Distribution,
-      oac: cloudfront.CfnOriginAccessControl,
-      bucket: s3.Bucket
-    ) => {
-      const cfnDist = distribution.node.defaultChild as cloudfront.CfnDistribution;
-
-      cfnDist.addPropertyOverride(
-        'DistributionConfig.Origins.0.S3OriginConfig.OriginAccessIdentity',
-        ''
-      );
-      cfnDist.addPropertyOverride(
-        'DistributionConfig.Origins.0.OriginAccessControlId',
-        oac.attrId
-      );
-
-      bucket.addToResourcePolicy(
-        new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          principals: [new iam.ServicePrincipal('cloudfront.amazonaws.com')],
-          actions: ['s3:GetObject'],
-          resources: [`${bucket.bucketArn}/*`],
-          conditions: {
-            StringEquals: {
-              // Scope to this distribution only — prevents other CloudFront
-              // distributions from reading this bucket even in the same account.
-              'AWS:SourceArn': `arn:aws:cloudfront::${this.account}:distribution/${distribution.distributionId}`,
-            },
-          },
-        })
-      );
-    };
-
-    applyOac(stagingDistribution, stagingOac, stagingBucket);
-    applyOac(prodDistribution, prodOac, prodBucket);
 
     // =========================================================================
     // GITHUB ACTIONS OIDC
