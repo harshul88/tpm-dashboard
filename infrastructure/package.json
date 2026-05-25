@@ -1,0 +1,27 @@
+{
+  "name": "tpm-dashboard-infrastructure",
+  "version": "0.1.0",
+  "bin": {
+    "tpm-dashboard": "bin/tpm-dashboard.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "synth": "cdk synth --profile tpm-dashboard",
+    "diff": "cdk diff --profile tpm-dashboard",
+    "deploy": "cdk deploy --profile tpm-dashboard",
+    "destroy": "cdk destroy --profile tpm-dashboard"
+  },
+  "devDependencies": {
+    "@types/node": "20.x",
+    "aws-cdk": "2.x",
+    "ts-node": "^10.9.0",
+    "typescript": "~5.4.0"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.x",
+    "constructs": "^10.0.0",
+    "source-map-support": "^0.5.21"
+  }
+}
