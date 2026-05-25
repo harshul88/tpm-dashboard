@@ -17,7 +17,7 @@
     "@types/node": "20.x",
     "aws-cdk": "2.x",
     "ts-node": "^10.9.0",
-    "typescript": "~5.4.0"
+    "typescript": "~5.9.3"
   },
   "dependencies": {
     "aws-cdk-lib": "2.x",
