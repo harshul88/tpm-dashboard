@@ -4,7 +4,7 @@
 
 ## Vision
 
-TPM OS saves Technical Program Managers 5+ hours per week by replacing manual data collection and status reporting with automated, real-time program dashboards. Built by a TPM, for TPMs — especially at smaller companies where you don't have a dedicated ops team, a BI analyst, or an executive assistant to help you pull it all together. You already have the data. It's just scattered across six different tools. TPM OS connects them and turns your existing workflow into a live dashboard — automatically.
+TPM OS saves Technical Program Managers 5+ hours per week by replacing manual data collection and status reporting with automated, real-time program dashboards. Built by a TPM, for TPMs — especially at smaller companies where you don't have a dedicated ops team, a BI analyst, or an executive assistant to help you pull it all together. You already have the data. It's just scattered across six different tools. TPM OS connects them and uses AI to turn that data into automated status reports — so you spend time on program decisions, not data collection.
 
 ---
 
@@ -21,6 +21,21 @@ You spend 2 hours on Friday building the report. By Monday morning, three things
 
 **There's no single place to see what actually matters across all your programs.**
 Current wins. Active blockers. Open risks. Upcoming milestones. You know this information — it lives in your head and across a dozen tabs. TPM OS puts it in one place, always current, always ready to share.
+
+---
+
+## How It Works Best
+
+TPM OS is only as good as your data. It works best when:
+
+- Engineers update tickets daily
+- Risks and blockers are logged in your tracking tool
+- Milestones have owners and due dates
+- At least one real data source is connected
+
+**With mock data:** great for portfolio demos, interviews, and learning the platform without needing buy-in from your teams.
+
+**With live data:** saves 5+ hours per week on status reporting — the numbers populate themselves and the AI writes the first draft for you.
 
 ---
 
@@ -72,27 +87,28 @@ Dashboards included: OKR Tracker, Milestone Tracker, Stakeholder Update Dashboar
 
 ---
 
-## Status Report Automation
+## AI-Powered Status Reports
 
 This is the feature that saves the most time.
 
-Every program in TPM OS automatically generates a **weekly status report** — the same report you currently spend 2 hours writing by hand. It pulls live data from your connected tools, structures it the way stakeholders expect, and has it ready before you've had your Monday morning coffee.
+TPM OS uses Claude AI to read all your connected program data and generate a draft weekly status report in plain English — written in the voice of a TPM, not a data export. It reads your tickets, your risk register, your roadmap, and your milestone tracker, and turns all of it into a report your VP can actually read.
 
-Every automated status report includes:
+Every AI-generated status report includes:
 
-- **Executive summary** — RAG status (Red / Amber / Green) for the program overall, with one plain-English line explaining why
-- **Key accomplishments this week** — what got done, pulled from your sprint and milestone data
-- **Blockers needing escalation** — anything that's been stuck for more than a defined threshold, flagged automatically
-- **Risks and mitigation status** — open risks from your risk register with current owner and mitigation progress
-- **Upcoming milestones** — everything due in the next 14 days, with owner and on-track status
-- **Data freshness timestamp** — so stakeholders know they're reading live data, not last week's copy-paste
+- **Executive summary** — RAG status (Red / Amber / Green) written in plain English, not dashboard jargon
+- **Key accomplishments this week** — pulled automatically from completed tickets and closed milestones
+- **Blockers needing escalation** — identified from open impediments that have been stuck past a threshold
+- **Risk summary** — current status of open risks from your risk register, with mitigation owner
+- **Upcoming milestones** — everything due in the next 14 days, flagged by on-track status
+
+You review, edit, and send. Claude does the data collection and first draft. You add the judgment and context — the part only you can provide.
 
 **Three ways to share it:**
 - View in the dashboard (for your own reference)
 - Export to PDF (for formal reporting or audit evidence)
 - Copy as Markdown (paste directly into email, Slack, or Confluence — formatted and ready to send)
 
-No reformatting. No chasing data. Just review, add any context that requires human judgment, and send.
+**Estimated time saved: 3–5 hours per week** depending on how many programs you manage and how current your data is.
 
 ---
 
