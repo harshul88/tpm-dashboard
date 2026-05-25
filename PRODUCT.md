@@ -4,182 +4,126 @@
 
 ## Vision
 
-TPM OS is an open-source dashboard platform for Technical Program Managers. A TPM manages a portfolio of programs — each program gets its own set of dashboards tailored to the program type. Dashboards are modular: picked from a library of templates and customized per program. Data sources are configured at the field level, so a single dashboard can pull ticket status from Jira, story points from Google Sheets, and team capacity from mock data — all at once. The result is a single operational surface that gives a TPM and their stakeholders a clear, real-time view of every program they own, without forcing a single tool or workflow on the teams they partner with.
+TPM OS saves Technical Program Managers 5+ hours per week by replacing manual data collection and status reporting with automated, real-time program dashboards. Built by a TPM, for TPMs — especially at smaller companies where you don't have a dedicated ops team, a BI analyst, or an executive assistant to help you pull it all together. You already have the data. It's just scattered across six different tools. TPM OS connects them and turns your existing workflow into a live dashboard — automatically.
 
 ---
 
-## Problem Statement
+## The Problem
 
-- **TPMs operate across too many tools.** Sprint health lives in Jira, DORA metrics in GitHub, OKRs in Notion, risk registers in spreadsheets. There is no single place to see the health of a full program, let alone a portfolio of programs.
-- **Stakeholder reporting is manual and expensive.** Weekly status updates, executive RAG summaries, and audit readiness packages are assembled by hand from multiple sources — work that consumes hours a TPM should be spending on unblocking teams.
-- **Dashboards are either too generic or too locked-in.** Off-the-shelf tools (Jira dashboards, Notion databases) are built for teams, not TPMs managing cross-team programs. Purpose-built TPM tools are expensive, opinionated, and require buy-in from engineering teams who already have their own workflows.
+**At smaller companies, there's no easy way to build program dashboards without buying expensive tools.**
+The enterprise options (Tableau, Power BI, Confluence dashboards) cost thousands per year, require IT setup, and still need someone to maintain them. Most TPMs end up in spreadsheets and Notion pages instead — which means they're the ones doing the maintenance.
 
----
+**TPMs spend hours every week just collecting data before they can even write a status report.**
+Jira for sprint status. GitHub for deployment metrics. Notion for the roadmap. Google Sheets for the risk register. You're not analyzing anything — you're copy-pasting. That's not what you were hired to do.
 
-## Core Concepts
+**Status updates are stale before stakeholders even open them.**
+You spend 2 hours on Friday building the report. By Monday morning, three things have changed. Stakeholders are making decisions on last week's data, and you're already behind on next week's update.
 
-| Term | Definition |
-|---|---|
-| **Portfolio** | A collection of programs owned and managed by one TPM. The portfolio is the top-level container — everything a TPM is responsible for lives here. |
-| **Program** | A tracked unit of work with a defined scope, timeline, and set of stakeholders. Programs come in types: product development, compliance/TRA, platform migration, initiative tracking. Each program type gets a corresponding template. |
-| **Dashboard** | A visualization module attached to a program. Each dashboard has a purpose (e.g. sprint health, DORA metrics, risk register), a layout, and one or more data source bindings. Dashboards are the atomic unit of the platform. |
-| **Template** | A pre-built set of dashboards grouped for a specific program type. Templates are the starting point — a TPM picks a template when creating a program and then customizes from there. |
-| **Data source** | Where a dashboard field pulls its data from. Sources are configured at the field level, not the dashboard level, so a single dashboard can mix Jira, Google Sheets, Notion, GitHub, and mock data simultaneously. |
+**There's no single place to see what actually matters across all your programs.**
+Current wins. Active blockers. Open risks. Upcoming milestones. You know this information — it lives in your head and across a dozen tabs. TPM OS puts it in one place, always current, always ready to share.
 
 ---
 
-## Program Templates (v1)
+## Core Value Proposition
 
-### 1. Product Development Program
-For TPMs running iterative software delivery programs with engineering teams.
+**Connect your existing tools once. Get automated status reports forever.**
 
-| Dashboard | Data Source |
-|---|---|
-| Sprint Tracker | Jira / GitHub / mock |
-| Engineering Metrics — DORA | GitHub / mock |
-| Roadmap + OKRs | Notion / Google Sheets / mock |
-
-### 2. Compliance / TRA Program
-For TPMs managing regulatory, security, or third-party risk assessments.
-
-| Dashboard | Data Source |
-|---|---|
-| Risk & Findings Tracker | Google Sheets / mock |
-| Milestone Tracker | Notion / mock |
-| Audit Readiness Dashboard | mock — future |
-
-### 3. Platform Migration Program
-For TPMs overseeing infrastructure, platform, or system migration programs.
-
-| Dashboard | Data Source |
-|---|---|
-| Sprint Tracker | Jira / GitHub / mock |
-| Engineering Metrics | GitHub / mock |
-| Dependency Tracker | mock — future |
-
-### 4. Initiative Tracking Program
-For TPMs driving strategic initiatives, cross-functional OKRs, or executive programs.
-
-| Dashboard | Data Source |
-|---|---|
-| OKR Tracker | Google Sheets / Notion / mock |
-| Milestone Tracker | Notion / mock |
-| Stakeholder Update Dashboard | mock — future |
+You don't change how your teams work. You don't ask engineering to switch tools. You point TPM OS at what already exists — and it does the reporting for you.
 
 ---
 
-## Dashboard Catalog (v1)
+## What a TPM Actually Tracks Every Week
 
-### Sprint Tracker
-- **Purpose:** Track active sprint health — kanban board, burndown, and velocity history.
-- **Default data source:** Mock
-- **Available data sources:** Jira, GitHub Projects, mock
-- **Templates:** Product Development, Platform Migration
+TPM OS is built around the five things every TPM reviews every single week, regardless of program type:
 
-### Engineering Metrics — DORA
-- **Purpose:** Surface Deployment Frequency, Lead Time for Changes, Change Failure Rate, and MTTR benchmarked against Elite/High/Medium/Low tiers.
-- **Default data source:** Mock
-- **Available data sources:** GitHub, mock
-- **Templates:** Product Development, Platform Migration
+1. **Current wins** — what shipped, what closed, what's worth celebrating
+2. **Blockers and escalations** — what's stuck, who needs to act, and how long it's been blocked
+3. **Risks and mitigation status** — what could go wrong, what's being done about it, what needs escalation
+4. **Upcoming milestones and events** — what's due in the next two weeks, who owns it, is it on track
+5. **Key accomplishments for stakeholder updates** — the summary your VP or client actually wants to read
 
-### Roadmap + OKRs
-- **Purpose:** Visualize program-level initiatives on a Gantt chart alongside OKR progress, team capacity, and a risk register.
-- **Default data source:** Mock
-- **Available data sources:** Notion, Google Sheets, mock
-- **Templates:** Product Development
-
-### OKR Tracker
-- **Purpose:** Track Objectives and Key Results with current vs. target progress and ownership mapping.
-- **Default data source:** Mock
-- **Available data sources:** Google Sheets, Notion, mock
-- **Templates:** Initiative Tracking
-
-### Milestone Tracker
-- **Purpose:** Show program milestones, owners, due dates, and RAG status in a timeline view.
-- **Default data source:** Mock
-- **Available data sources:** Notion, mock
-- **Templates:** Compliance / TRA, Initiative Tracking
-
-### Risk & Findings Tracker
-- **Purpose:** Log risks and audit findings with severity ratings, owners, and remediation status.
-- **Default data source:** Mock
-- **Available data sources:** Google Sheets, mock
-- **Templates:** Compliance / TRA
-
-### Audit Readiness Dashboard
-- **Purpose:** Aggregate evidence completion, control coverage, and readiness score ahead of an audit.
-- **Default data source:** Mock — future
-- **Available data sources:** mock (v1), Google Sheets (v2)
-- **Templates:** Compliance / TRA
-
-### Dependency Tracker
-- **Purpose:** Map cross-team and cross-system dependencies, surfacing blockers and delivery risk.
-- **Default data source:** Mock — future
-- **Available data sources:** mock (v1), Jira (v2)
-- **Templates:** Platform Migration
-
-### Stakeholder Update Dashboard
-- **Purpose:** Auto-generate a read-only executive summary with RAG status, milestone progress, and key risks.
-- **Default data source:** Mock — future
-- **Available data sources:** mock (v1), aggregated from other dashboards (v2)
-- **Templates:** Initiative Tracking
+Every dashboard in TPM OS is designed to surface one or more of these five things — nothing else.
 
 ---
 
-## Data Source Flexibility
+## Program Types
 
-TPM OS uses a **field-level configuration model** — data sources are bound to individual fields within a dashboard, not to the dashboard as a whole.
+TPM OS organizes work around programs. A program is anything you own end-to-end: a product release, a compliance deadline, a migration, a strategic initiative. Pick the type that matches your work and get a pre-built set of dashboards ready to go.
 
-This means a single dashboard can simultaneously pull from multiple sources. For example, the Sprint Tracker might be configured as:
+### Product Development Program
+For managing iterative software delivery with an engineering team. Covers sprint health, deployment performance, and roadmap progress. Answers the question: *is this team on track to ship what they committed to?*
 
-| Field | Data Source |
-|---|---|
-| Ticket status (To Do / In Progress / Done) | Jira |
-| Story point estimates | Google Sheets |
-| Team capacity and allocation | Mock |
-| Burndown actuals | GitHub Projects |
+Dashboards included: Sprint Tracker, Engineering Metrics (DORA), Roadmap + OKRs.
 
-This approach respects the reality of how TPMs work: engineering teams own their tools, and forcing a single source of truth across teams is rarely achievable. Field-level binding lets the TPM meet each team where they are.
+### Compliance & Risk Program
+For managing TRA findings, security reviews, regulatory deadlines, and audit readiness. Covers open findings, remediation status, evidence collection, and milestone tracking. Answers the question: *are we ready for the audit, and what's still open?*
 
-In v1, all fields default to mock data. In v2, each field can be independently remapped to a live source via a configuration UI — no code required.
+Dashboards included: Risk & Findings Tracker, Milestone Tracker, Audit Readiness Dashboard.
 
----
+### Platform & Infrastructure Migration Program
+For managing large-scale technical migrations across teams and systems. Covers sprint execution, cross-team dependencies, and engineering health during the transition. Answers the question: *are we migrating on schedule and without breaking things?*
 
-## User Roles (v1)
+Dashboards included: Sprint Tracker, Engineering Metrics, Dependency Tracker.
 
-| Role | Access |
-|---|---|
-| **TPM (owner)** | Full read + write access. Can create programs, configure dashboards, bind data sources, and manage the portfolio. |
-| **Engineering Lead** | Read access across all dashboards. Expanded detail view on Engineering Metrics (DORA) — can see raw deployment and incident data. |
-| **Executive** | Read-only RAG summary view. Sees milestone status, top risks, and OKR progress. No access to sprint-level detail. |
-| **Stakeholder** | Read-only milestone view. Sees timeline, owners, and status only. No access to engineering metrics or risk detail. |
+### Initiative & OKR Tracking Program
+For managing strategic cross-functional initiatives, company-wide OKRs, or executive programs. Covers key result progress, milestone delivery, and stakeholder-ready summaries. Answers the question: *are we making measurable progress on what the company said mattered this quarter?*
+
+Dashboards included: OKR Tracker, Milestone Tracker, Stakeholder Update Dashboard.
 
 ---
 
-## What We Are NOT Building in v1
+## Status Report Automation
 
-- **No portfolio rollup view.** Each program is managed independently. A cross-program portfolio summary is a v3 feature.
-- **No real-time data.** A 5-minute cache on all data source calls is acceptable for v1. Live websocket updates are out of scope.
-- **No mobile app.** TPM OS is a desktop-first web application. Mobile responsiveness is a best-effort concern, not a hard requirement.
-- **No notifications or alerts.** Proactive alerts (milestone slippage, DORA degradation, risk escalation) are out of scope for v1.
-- **No multi-tenant SaaS.** v1 is self-hosted only. Each team deploys their own instance. A managed cloud offering is a v3+ consideration.
+This is the feature that saves the most time.
+
+Every program in TPM OS automatically generates a **weekly status report** — the same report you currently spend 2 hours writing by hand. It pulls live data from your connected tools, structures it the way stakeholders expect, and has it ready before you've had your Monday morning coffee.
+
+Every automated status report includes:
+
+- **Executive summary** — RAG status (Red / Amber / Green) for the program overall, with one plain-English line explaining why
+- **Key accomplishments this week** — what got done, pulled from your sprint and milestone data
+- **Blockers needing escalation** — anything that's been stuck for more than a defined threshold, flagged automatically
+- **Risks and mitigation status** — open risks from your risk register with current owner and mitigation progress
+- **Upcoming milestones** — everything due in the next 14 days, with owner and on-track status
+- **Data freshness timestamp** — so stakeholders know they're reading live data, not last week's copy-paste
+
+**Three ways to share it:**
+- View in the dashboard (for your own reference)
+- Export to PDF (for formal reporting or audit evidence)
+- Copy as Markdown (paste directly into email, Slack, or Confluence — formatted and ready to send)
+
+No reformatting. No chasing data. Just review, add any context that requires human judgment, and send.
+
+---
+
+## What We Are Not Building in v1
+
+Being clear about this upfront saves everyone time.
+
+- **No big-picture portfolio rollup.** You won't see a single view across all your programs in v1. Each program lives on its own. Portfolio-level visibility comes in v3.
+- **No instant live data.** Data refreshes every 5 minutes. For a status report, that's effectively real-time. We are not building a live trading dashboard.
+- **No mobile app.** TPM OS is for your laptop, where you actually do this work. It will look fine on a tablet. It will not be optimized for your phone.
+- **No alerts or notifications.** TPM OS won't ping you when a milestone slips or a DORA metric degrades. You pull the data — it doesn't push to you. Notifications are a v4 feature.
+- **No shared cloud version.** In v1, you host your own instance. There is no "sign up at tpmos.com" option yet. If you want to run it, you deploy it. The deployment guide gets you live in under 30 minutes.
 
 ---
 
 ## Success Metrics for v1
 
-- A TPM can create a new program and select a template in **under 5 minutes** from first login.
-- A non-technical PM can deploy TPM OS with mock data and have all dashboards rendering in **under 30 minutes** using the deployment guide.
-- All 4 program templates work end-to-end with mock data — no broken views, no empty states without explanation.
-- At least one real data source is connected and working per program template (GitHub for DORA, Notion for roadmap/milestones, Google Sheets for risk/OKRs).
+We'll know v1 is working when:
+
+- **A TPM saves at least 3 hours per week** compared to their current manual reporting process — measured by feedback from the first 10 users.
+- **A status report is generated in under 60 seconds** from the moment a TPM opens the program dashboard.
+- **A new program is set up in under 5 minutes** — from picking a template to having a dashboard with mock data rendered and ready to customize.
+- **TPM OS works with the tools TPMs already use** — at least one live data source (GitHub, Notion, Jira, or Google Sheets) connected and working per program template before v1 ships.
 
 ---
 
 ## Version Roadmap
 
-| Version | Theme | Scope |
+| Version | Theme | What you can do |
 |---|---|---|
-| **v1.0** | Foundation | 4 program templates, all dashboards on mock data, AWS S3 + CloudFront deployment, GitHub Actions CI/CD |
-| **v2.0** | Live data | GitHub, Notion, Jira, and Google Sheets integrations; field-level data source configuration UI; Lambda proxy layer |
-| **v3.0** | Scale | Portfolio rollup view, 1-click Vercel deploy, public template library |
-| **v4.0** | Collaboration | Multi-user support, role-based access control, milestone notifications and alerts |
+| **v1.0** | Get your first dashboard live in 30 minutes | Set up any of the 4 program templates with mock data, generate your first automated status report, deploy to AWS with one command |
+| **v2.0** | Connect your real tools, eliminate manual data entry | Point each dashboard field at GitHub, Notion, Jira, or Google Sheets — your status reports start writing themselves from live data |
+| **v3.0** | See your full portfolio in one view | One screen that shows the health of every program you own, with the ability to share publicly and deploy to Vercel in one click |
+| **v4.0** | Share with your team, manage access by role | Invite your engineering leads, executives, and stakeholders — each sees exactly what's relevant to them, nothing more |
