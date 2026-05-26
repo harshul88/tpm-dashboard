@@ -1,8 +1,7 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { ok } from '../shared/response';
-import { dataPoint } from '../shared/response';
-import { cacheKey, cacheGet, cachePut } from '../shared/cache';
-import { getConfig } from '../shared/config';
+import { success, dataPoint } from '../shared/response';
+import { buildKey, get, set } from '../shared/cache';
+import { getDataSource, getCacheTtl } from '../shared/config';
 
 type Period = '7d' | '30d' | '90d';
 
@@ -11,16 +10,12 @@ export async function getIncidents(
   programId: string,
 ): Promise<APIGatewayProxyResult> {
   const period = (event.queryStringParameters?.period ?? '30d') as Period;
-  const key = cacheKey(programId, 'metrics-incidents', { period });
-  const cached = await cacheGet<unknown>(key);
-  if (cached) {
-    return ok(cached.data, { programId, source: 'cached', cachedAt: cached.cachedAt });
-  }
+  const src = getDataSource('engMetrics');
+  const key = buildKey(programId, 'metrics', 'incidents', period);
+  const cached = await get(key);
+  if (cached) return success(cached.data, src, true, cached.cachedAt);
 
-  const config = getConfig();
-  const src = config.integrations.pagerduty.enabled ? 'github' : 'mock';
-
-  // TODO: fetch from PagerDuty or GitHub Issues depending on config
+  // TODO: fetch from PagerDuty or GitHub Issues based on config
   const now = new Date().toISOString();
   const data = {
     incidents: [
@@ -33,10 +28,10 @@ export async function getIncidents(
         status: 'resolved',
       },
     ],
-    openCount: dataPoint(0, src),
+    openCount:          dataPoint(0,   src),
     avgResolutionHours: dataPoint(1.2, src),
   };
 
-  await cachePut(key, data);
-  return ok(data, { programId, source: src === 'mock' ? 'mock' : 'live' });
+  await set(key, data, getCacheTtl());
+  return success(data, src);
 }

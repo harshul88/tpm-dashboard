@@ -1,6 +1,6 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { ok, err } from '../shared/response';
-import { ErrorCode } from '../shared/errors';
+import { success, fail } from '../shared/response';
+import { TpmError } from '../shared/errors';
 import crypto from 'node:crypto';
 
 interface CreateProgramBody {
@@ -12,33 +12,28 @@ interface CreateProgramBody {
 export async function createProgram(
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
-  if (!event.body) {
-    return err(ErrorCode.INVALID_PARAMS, 'Request body is required');
-  }
+  if (!event.body) return fail(TpmError.invalidParams('Request body is required'));
 
   let body: CreateProgramBody;
   try {
     body = JSON.parse(event.body) as CreateProgramBody;
   } catch {
-    return err(ErrorCode.INVALID_PARAMS, 'Invalid JSON body');
+    return fail(TpmError.invalidParams('Invalid JSON body'));
   }
 
   if (!body.name || !body.type || !body.dataMode) {
-    return err(ErrorCode.INVALID_PARAMS, 'name, type, and dataMode are required');
+    return fail(TpmError.invalidParams('name, type, and dataMode are required'));
   }
-
-  const id = crypto.randomUUID();
-  const now = new Date().toISOString();
 
   // TODO: persist to DynamoDB programs table
   const program = {
-    id,
+    id: crypto.randomUUID(),
     name: body.name,
     type: body.type,
     dataMode: body.dataMode,
-    createdAt: now,
+    createdAt: new Date().toISOString(),
     configPath: 'tpm.config.json',
   };
 
-  return ok(program, { programId: id, source: 'mock' }, 201);
+  return success(program, 'mock');
 }

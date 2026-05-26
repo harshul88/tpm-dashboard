@@ -1,6 +1,6 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { ok, err } from '../shared/response';
-import { ErrorCode } from '../shared/errors';
+import { success, fail, dataPoint } from '../shared/response';
+import { TpmError } from '../shared/errors';
 
 type TicketStatus = 'todo' | 'in-progress' | 'done' | 'blocked';
 
@@ -14,26 +14,24 @@ export async function moveTicket(
   programId: string,
   ticketId: string,
 ): Promise<APIGatewayProxyResult> {
-  if (!event.body) {
-    return err(ErrorCode.INVALID_PARAMS, 'Request body is required', programId);
-  }
+  if (!event.body) return fail(TpmError.invalidParams('Request body is required'));
 
   let body: MoveTicketBody;
   try {
     body = JSON.parse(event.body) as MoveTicketBody;
   } catch {
-    return err(ErrorCode.INVALID_PARAMS, 'Invalid JSON body', programId);
+    return fail(TpmError.invalidParams('Invalid JSON body'));
   }
 
-  // Mock mode only in v1 — live source writes are not implemented
+  // Mock mode only in v1 — live source writes are v2
   const updated = {
     id: ticketId,
     title: 'Ticket title',
     status: body.status ?? 'todo',
-    points: { value: 3, source_at_time: 'mock', recorded_at: new Date().toISOString(), updated_by: 'tpm' },
+    points: dataPoint(3, 'mock', 'tpm'),
     assignee: '',
     blockerNote: body.blockerNote ?? null,
   };
 
-  return ok(updated, { programId, source: 'mock' });
+  return success(updated, 'mock');
 }

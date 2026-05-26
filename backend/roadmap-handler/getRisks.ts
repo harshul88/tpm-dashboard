@@ -1,25 +1,16 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { ok } from '../shared/response';
-import { dataPoint } from '../shared/response';
-import { cacheKey, cacheGet, cachePut } from '../shared/cache';
-import { getConfig } from '../shared/config';
+import { success, dataPoint } from '../shared/response';
+import { buildKey, get, set } from '../shared/cache';
+import { getDataSource, getCacheTtl } from '../shared/config';
 
 export async function getRisks(
   _event: APIGatewayProxyEvent,
   programId: string,
 ): Promise<APIGatewayProxyResult> {
-  const key = cacheKey(programId, 'roadmap-risks');
-  const cached = await cacheGet<unknown>(key);
-  if (cached) {
-    return ok(cached.data, { programId, source: 'cached', cachedAt: cached.cachedAt });
-  }
-
-  const config = getConfig();
-  const src = config.integrations.notion.enabled
-    ? 'notion'
-    : config.integrations.googleSheets.enabled
-      ? 'google-sheets'
-      : 'mock';
+  const src = getDataSource('roadmap');
+  const key = buildKey(programId, 'roadmap', 'risks');
+  const cached = await get(key);
+  if (cached) return success(cached.data, src, true, cached.cachedAt);
 
   // TODO: fetch risk register from Notion or Google Sheets
   const now = new Date().toISOString();
@@ -37,10 +28,10 @@ export async function getRisks(
         dueDate: null,
       },
     ],
-    openCount: dataPoint(1, src),
+    openCount:        dataPoint(1, src),
     highPriorityCount: dataPoint(1, src),
   };
 
-  await cachePut(key, data);
-  return ok(data, { programId, source: src === 'mock' ? 'mock' : 'live' });
+  await set(key, data, getCacheTtl());
+  return success(data, src);
 }

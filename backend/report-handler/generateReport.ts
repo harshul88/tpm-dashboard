@@ -1,8 +1,8 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import Anthropic from '@anthropic-ai/sdk';
-import { ok, err } from '../shared/response';
-import { ErrorCode } from '../shared/errors';
-import { getConfig } from '../shared/config';
+import { success, fail } from '../shared/response';
+import { TpmError } from '../shared/errors';
+import { getAiConfig, getConfig } from '../shared/config';
 import crypto from 'node:crypto';
 
 interface GenerateReportBody {
@@ -11,16 +11,16 @@ interface GenerateReportBody {
   includeConfidential?: boolean;
 }
 
-// generateReport intentionally bypasses cache — every call costs tokens and is
+// Bypasses cache intentionally — each call costs API tokens and is
 // explicitly triggered by the TPM. See API_CONTRACT.md §Design Principles #6.
 export async function generateReport(
   event: APIGatewayProxyEvent,
   programId: string,
 ): Promise<APIGatewayProxyResult> {
-  const config = getConfig();
+  const aiConfig = getAiConfig();
 
-  if (!config.ai.report_generation) {
-    return err(ErrorCode.NOT_IMPLEMENTED, 'AI report generation is disabled in tpm.config.json', programId);
+  if (!aiConfig.report_generation) {
+    return fail(TpmError.notImplemented('AI report generation (disabled in tpm.config.json)'));
   }
 
   let body: GenerateReportBody = {};
@@ -28,12 +28,12 @@ export async function generateReport(
     try {
       body = JSON.parse(event.body) as GenerateReportBody;
     } catch {
-      return err(ErrorCode.INVALID_PARAMS, 'Invalid JSON body', programId);
+      return fail(TpmError.invalidParams('Invalid JSON body'));
     }
   }
 
   const weekEnding = body.weekEndingDate ?? new Date().toISOString();
-  const tone = body.tone ?? 'executive';
+  const tone       = body.tone ?? 'executive';
 
   // TODO: gather live program data (sprint, dora, roadmap, risks) before calling Claude
   const programContext = `
@@ -52,7 +52,7 @@ Open risks: 1 (CloudFront activation delay — mitigating)
   try {
     const client = new Anthropic();
     const message = await client.messages.create({
-      model: config.ai.model,
+      model: aiConfig.model,
       max_tokens: 1024,
       messages: [
         {
@@ -68,33 +68,37 @@ ${programContext}`,
     });
 
     const text = message.content[0].type === 'text' ? message.content[0].text : '';
-    const parsed = JSON.parse(text) as { ragStatus: 'red' | 'amber' | 'green'; executiveSummary: string };
-    ragStatus = parsed.ragStatus;
+    const parsed = JSON.parse(text) as {
+      ragStatus: 'red' | 'amber' | 'green';
+      executiveSummary: string;
+    };
+    ragStatus       = parsed.ragStatus;
     executiveSummary = parsed.executiveSummary;
   } catch {
-    return err(ErrorCode.AI_GENERATION_FAILED, 'Claude failed to generate the status report', programId);
+    return fail(TpmError.aiGenerationFailed());
   }
 
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + config.defaults.report_draft_expiry_hours * 3_600_000);
+  const config     = getConfig();
+  const now        = new Date();
+  const expiresAt  = new Date(
+    now.getTime() + config.defaults.report_draft_expiry_hours * 3_600_000,
+  );
 
+  // TODO: store draft in DynamoDB temp store with TTL = expiresAt
   const draft = {
-    report_id: `temp_${crypto.randomUUID()}`,
-    status: 'draft',
-    expires_at: expiresAt.toISOString(),
+    report_id:   `temp_${crypto.randomUUID()}`,
+    status:      'draft',
+    expires_at:  expiresAt.toISOString(),
     generatedAt: now.toISOString(),
     weekEnding,
     ragStatus,
     executiveSummary,
-    keyAccomplishments: [],
+    keyAccomplishments:        [],
     blockersNeedingEscalation: [],
-    riskSummary: [],
-    upcomingMilestones: [],
+    riskSummary:               [],
+    upcomingMilestones:        [],
     exportFormats: { markdown: executiveSummary, pdfUrl: null },
   };
 
-  // Store draft in DynamoDB temp store with TTL matching expires_at
-  // TODO: cachePut(`draft:${draft.report_id}`, draft) with custom TTL
-
-  return ok(draft, { programId, source: 'live' });
+  return success(draft, 'mock');
 }

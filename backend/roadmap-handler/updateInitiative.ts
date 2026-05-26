@@ -1,7 +1,6 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { ok, err } from '../shared/response';
-import { dataPoint } from '../shared/response';
-import { ErrorCode } from '../shared/errors';
+import { success, fail, dataPoint } from '../shared/response';
+import { TpmError } from '../shared/errors';
 
 type InitiativeStatus = 'not-started' | 'in-progress' | 'complete' | 'at-risk';
 
@@ -16,15 +15,13 @@ export async function updateInitiative(
   programId: string,
   initiativeId: string,
 ): Promise<APIGatewayProxyResult> {
-  if (!event.body) {
-    return err(ErrorCode.INVALID_PARAMS, 'Request body is required', programId);
-  }
+  if (!event.body) return fail(TpmError.invalidParams('Request body is required'));
 
   let body: UpdateInitiativeBody;
   try {
     body = JSON.parse(event.body) as UpdateInitiativeBody;
   } catch {
-    return err(ErrorCode.INVALID_PARAMS, 'Invalid JSON body', programId);
+    return fail(TpmError.invalidParams('Invalid JSON body'));
   }
 
   // Mock mode only in v1
@@ -38,5 +35,5 @@ export async function updateInitiative(
     quarter: 'Q2 2026',
   };
 
-  return ok(updated, { programId, source: 'mock' });
+  return success(updated, 'mock');
 }

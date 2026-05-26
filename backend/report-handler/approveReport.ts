@@ -1,6 +1,6 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { ok, err } from '../shared/response';
-import { ErrorCode } from '../shared/errors';
+import { success, fail } from '../shared/response';
+import { TpmError } from '../shared/errors';
 import crypto from 'node:crypto';
 
 interface ApproveReportBody {
@@ -12,46 +12,40 @@ export async function approveReport(
   event: APIGatewayProxyEvent,
   programId: string,
 ): Promise<APIGatewayProxyResult> {
-  if (!event.body) {
-    return err(ErrorCode.INVALID_PARAMS, 'Request body is required', programId);
-  }
+  if (!event.body) return fail(TpmError.invalidParams('Request body is required'));
 
   let body: ApproveReportBody;
   try {
     body = JSON.parse(event.body) as ApproveReportBody;
   } catch {
-    return err(ErrorCode.INVALID_PARAMS, 'Invalid JSON body', programId);
+    return fail(TpmError.invalidParams('Invalid JSON body'));
   }
 
   if (!body.report_id) {
-    return err(ErrorCode.INVALID_PARAMS, 'report_id is required', programId);
+    return fail(TpmError.invalidParams('report_id is required'));
   }
 
-  // TODO: fetch draft from temp store by body.report_id
-  // TODO: verify draft has not expired
-  // TODO: apply body.edits to executiveSummary if provided
-  // TODO: persist to DynamoDB report history with status: 'approved'
-
+  // TODO: fetch draft from temp store, verify not expired, apply edits, persist to history
   const now = new Date().toISOString();
   const approvedReport = {
-    report_id: crypto.randomUUID(),
-    status: 'approved',
-    approvedAt: now,
+    report_id:   crypto.randomUUID(),
+    status:      'approved',
+    approvedAt:  now,
     generatedAt: now,
-    weekEnding: now,
-    ragStatus: 'green',
+    weekEnding:  now,
+    ragStatus:   'green',
     executiveSummary: body.edits
       ? `[TPM edits applied] ${body.edits}`
       : 'Program is on track. Sprint at 60% completion with no critical blockers.',
-    keyAccomplishments: [],
+    keyAccomplishments:        [],
     blockersNeedingEscalation: [],
-    riskSummary: [],
-    upcomingMilestones: [],
+    riskSummary:               [],
+    upcomingMilestones:        [],
     exportFormats: {
       markdown: '# Weekly Status Report\n\n**Status:** Green\n',
       pdfUrl: null,
     },
   };
 
-  return ok({ report: approvedReport }, { programId, source: 'mock' });
+  return success({ report: approvedReport }, 'mock');
 }

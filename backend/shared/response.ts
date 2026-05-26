@@ -1,71 +1,98 @@
 import type { APIGatewayProxyResult } from 'aws-lambda';
-import { ErrorCode, HttpStatus, Retryable } from './errors';
+import { TpmError } from './errors';
+import type { Source } from './errors';
 
-export type Source = 'live' | 'mock' | 'cached';
+export type { Source };
 
 export interface DataPoint {
   value: number;
-  source_at_time: 'mock' | 'jira' | 'linear' | 'github' | 'notion' | 'google-sheets';
+  source_at_time: Source;
   recorded_at: string;
   updated_by: 'system' | 'tpm';
 }
 
-interface MetaInput {
-  programId?: string | null;
-  source?: Source | null;
-  cachedAt?: string | null;
+interface ResponseMeta {
+  source: Source | null;
+  cached: boolean;
+  cached_at: string | null;
+  fallback: boolean;
+  version: '1.0.0';
 }
 
-const JSON_HEADERS = { 'Content-Type': 'application/json' };
+interface ResponseEnvelope {
+  data: unknown;
+  meta: ResponseMeta;
+  error: { code: string; message: string; retryable: boolean } | null;
+}
 
-export function ok(
+const CORS_HEADERS = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET,POST,PATCH,OPTIONS',
+};
+
+export function lambdaResponse(
+  statusCode: number,
+  body: ResponseEnvelope,
+): APIGatewayProxyResult {
+  return { statusCode, headers: CORS_HEADERS, body: JSON.stringify(body) };
+}
+
+function meta(
+  source: Source | null,
+  cached: boolean,
+  cachedAt: string | null,
+  fallback: boolean,
+): ResponseMeta {
+  return { source, cached, cached_at: cachedAt, fallback, version: '1.0.0' };
+}
+
+export function success(
   data: unknown,
-  meta: MetaInput = {},
-  statusCode = 200,
+  source: Source,
+  cached = false,
+  cachedAt: string | null = null,
 ): APIGatewayProxyResult {
-  return {
-    statusCode,
-    headers: JSON_HEADERS,
-    body: JSON.stringify({
-      data,
-      meta: {
-        programId: meta.programId ?? null,
-        source: meta.source ?? null,
-        cachedAt: meta.cachedAt ?? null,
-        generatedAt: new Date().toISOString(),
-        version: 'v1',
-      },
-      error: null,
-    }),
-  };
+  return lambdaResponse(200, {
+    data,
+    meta: meta(source, cached, cachedAt, false),
+    error: null,
+  });
 }
 
-export function err(
-  code: ErrorCode,
-  message: string,
-  programId: string | null = null,
+export function fallback(
+  data: unknown,
+  _originalSource: Source,
+  fallbackSource: Source,
 ): APIGatewayProxyResult {
-  return {
-    statusCode: HttpStatus[code],
-    headers: JSON_HEADERS,
-    body: JSON.stringify({
-      data: null,
-      meta: {
-        programId,
-        source: null,
-        cachedAt: null,
-        generatedAt: new Date().toISOString(),
-        version: 'v1',
-      },
-      error: { code, message, retryable: Retryable[code] },
-    }),
-  };
+  return lambdaResponse(200, {
+    data,
+    meta: meta(fallbackSource, false, null, true),
+    error: null,
+  });
+}
+
+export function notImplemented(feature: string): APIGatewayProxyResult {
+  return fail(TpmError.notImplemented(feature));
+}
+
+export function fail(error: TpmError): APIGatewayProxyResult {
+  return lambdaResponse(error.status, {
+    data: null,
+    meta: meta(null, false, null, false),
+    error: { code: error.code, message: error.message, retryable: error.retryable },
+  });
 }
 
 export function dataPoint(
   value: number,
-  source: DataPoint['source_at_time'],
+  source: Source,
   updatedBy: DataPoint['updated_by'] = 'system',
 ): DataPoint {
-  return { value, source_at_time: source, recorded_at: new Date().toISOString(), updated_by: updatedBy };
+  return {
+    value,
+    source_at_time: source,
+    recorded_at: new Date().toISOString(),
+    updated_by: updatedBy,
+  };
 }

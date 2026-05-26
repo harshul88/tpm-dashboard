@@ -1,22 +1,17 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { ok, err } from '../shared/response';
-import { ErrorCode, ApiError } from '../shared/errors';
-import { cacheKey, cacheGet, cachePut } from '../shared/cache';
+import { success } from '../shared/response';
+import { buildKey, get, set } from '../shared/cache';
+import { getCacheTtl } from '../shared/config';
 
 export async function getProgram(
   _event: APIGatewayProxyEvent,
   programId: string,
 ): Promise<APIGatewayProxyResult> {
-  const key = cacheKey(programId, 'get-program');
-  const cached = await cacheGet<unknown>(key);
-  if (cached) {
-    return ok(cached.data, { programId, source: 'cached', cachedAt: cached.cachedAt });
-  }
+  const key = buildKey('programs', programId);
+  const cached = await get(key);
+  if (cached) return success(cached.data, 'mock', true, cached.cachedAt);
 
-  // TODO: fetch from DynamoDB programs table
-  // throw new ApiError(ErrorCode.PROGRAM_NOT_FOUND, `Program ${programId} not found`);
-  void ApiError; // imported for future use
-
+  // TODO: fetch from DynamoDB — throw TpmError.programNotFound(programId) if missing
   const data = {
     id: programId,
     name: 'Untitled Program',
@@ -29,8 +24,6 @@ export async function getProgram(
     sharing: { enabled: false, collaborators: [] },
   };
 
-  await cachePut(key, data);
-  return ok(data, { programId, source: 'mock' });
+  await set(key, data, getCacheTtl());
+  return success(data, 'mock');
 }
-
-export { err, ErrorCode };

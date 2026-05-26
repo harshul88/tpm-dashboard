@@ -1,21 +1,16 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { ok } from '../shared/response';
-import { dataPoint } from '../shared/response';
-import { cacheKey, cacheGet, cachePut } from '../shared/cache';
-import { getConfig } from '../shared/config';
+import { success, dataPoint } from '../shared/response';
+import { buildKey, get, set } from '../shared/cache';
+import { getDataSource, getCacheTtl } from '../shared/config';
 
 export async function getVelocity(
   _event: APIGatewayProxyEvent,
   programId: string,
 ): Promise<APIGatewayProxyResult> {
-  const key = cacheKey(programId, 'sprint-velocity');
-  const cached = await cacheGet<unknown>(key);
-  if (cached) {
-    return ok(cached.data, { programId, source: 'cached', cachedAt: cached.cachedAt });
-  }
-
-  const config = getConfig();
-  const src = config.defaults.dataSources.sprintTracker as 'mock' | 'jira' | 'linear' | 'github';
+  const src = getDataSource('sprintTracker');
+  const key = buildKey(programId, 'sprint', 'velocity');
+  const cached = await get(key);
+  if (cached) return success(cached.data, src, true, cached.cachedAt);
 
   // TODO: fetch last 6 sprints from source
   const data = {
@@ -28,6 +23,6 @@ export async function getVelocity(
     trend: 'improving',
   };
 
-  await cachePut(key, data);
-  return ok(data, { programId, source: src === 'mock' ? 'mock' : 'live' });
+  await set(key, data, getCacheTtl());
+  return success(data, src);
 }

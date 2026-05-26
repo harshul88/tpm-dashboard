@@ -1,20 +1,21 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { ok, err } from '../shared/response';
-import { ErrorCode } from '../shared/errors';
-import { cacheKey, cacheGet } from '../shared/cache';
+import { fail } from '../shared/response';
+import { TpmError } from '../shared/errors';
+import { buildKey, get } from '../shared/cache';
 
 export async function getReport(
   _event: APIGatewayProxyEvent,
   programId: string,
   reportId: string,
 ): Promise<APIGatewayProxyResult> {
-  const key = cacheKey(programId, `report-${reportId}`);
-  const cached = await cacheGet<unknown>(key);
+  const key    = buildKey(programId, 'report', reportId);
+  const cached = await get(key);
   if (cached) {
-    return ok(cached.data, { programId, source: 'cached', cachedAt: cached.cachedAt });
+    // success imported lazily to avoid circular reference at module level
+    const { success } = await import('../shared/response');
+    return success(cached.data, 'mock', true, cached.cachedAt);
   }
 
   // TODO: fetch approved report from DynamoDB by reportId
-  // If not found: throw new ApiError(ErrorCode.PROGRAM_NOT_FOUND, `Report ${reportId} not found`)
-  return err(ErrorCode.PROGRAM_NOT_FOUND, `Report ${reportId} not found`, programId);
+  return fail(TpmError.programNotFound(reportId));
 }

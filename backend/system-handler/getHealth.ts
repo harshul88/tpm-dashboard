@@ -1,9 +1,9 @@
 import type { APIGatewayProxyResult } from 'aws-lambda';
-import { ok } from '../shared/response';
+import { success } from '../shared/response';
 
 export async function getHealth(): Promise<APIGatewayProxyResult> {
-  return ok(
+  return success(
     { status: 'ok', version: 'v1', timestamp: new Date().toISOString() },
-    { programId: null, source: null },
+    'mock',
   );
 }

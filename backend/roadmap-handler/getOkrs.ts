@@ -1,25 +1,16 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { ok } from '../shared/response';
-import { dataPoint } from '../shared/response';
-import { cacheKey, cacheGet, cachePut } from '../shared/cache';
-import { getConfig } from '../shared/config';
+import { success, dataPoint } from '../shared/response';
+import { buildKey, get, set } from '../shared/cache';
+import { getDataSource, getCacheTtl } from '../shared/config';
 
 export async function getOkrs(
   _event: APIGatewayProxyEvent,
   programId: string,
 ): Promise<APIGatewayProxyResult> {
-  const key = cacheKey(programId, 'roadmap-okrs');
-  const cached = await cacheGet<unknown>(key);
-  if (cached) {
-    return ok(cached.data, { programId, source: 'cached', cachedAt: cached.cachedAt });
-  }
-
-  const config = getConfig();
-  const src = config.integrations.notion.enabled
-    ? 'notion'
-    : config.integrations.googleSheets.enabled
-      ? 'google-sheets'
-      : 'mock';
+  const src = getDataSource('roadmap');
+  const key = buildKey(programId, 'roadmap', 'okrs');
+  const cached = await get(key);
+  if (cached) return success(cached.data, src, true, cached.cachedAt);
 
   // TODO: fetch OKR data from Notion or Google Sheets
   const data = {
@@ -30,7 +21,7 @@ export async function getOkrs(
         id: 'kr-1',
         title: 'Ship 3 of 4 program templates',
         progress: dataPoint(2, src, 'tpm'),
-        target: dataPoint(4, src, 'tpm'),
+        target:   dataPoint(4, src, 'tpm'),
         unit: 'templates',
         status: 'on-track',
       },
@@ -38,7 +29,7 @@ export async function getOkrs(
         id: 'kr-2',
         title: 'Time to first dashboard under 5 minutes',
         progress: dataPoint(7, src, 'tpm'),
-        target: dataPoint(5, src, 'tpm'),
+        target:   dataPoint(5, src, 'tpm'),
         unit: 'minutes',
         status: 'at-risk',
       },
@@ -46,6 +37,6 @@ export async function getOkrs(
     overallProgress: dataPoint(55, src),
   };
 
-  await cachePut(key, data);
-  return ok(data, { programId, source: src === 'mock' ? 'mock' : 'live' });
+  await set(key, data, getCacheTtl());
+  return success(data, src);
 }

@@ -1,47 +1,73 @@
-export const ErrorCode = {
-  INVALID_PARAMS: 'INVALID_PARAMS',
-  UNAUTHORIZED: 'UNAUTHORIZED',
-  PROGRAM_NOT_FOUND: 'PROGRAM_NOT_FOUND',
-  NOT_IMPLEMENTED: 'NOT_IMPLEMENTED',
-  RATE_LIMITED: 'RATE_LIMITED',
-  SOURCE_UNAVAILABLE: 'SOURCE_UNAVAILABLE',
-  STALE_DATA: 'STALE_DATA',
-  AI_GENERATION_FAILED: 'AI_GENERATION_FAILED',
-  INTERNAL_ERROR: 'INTERNAL_ERROR',
+export type Source =
+  | 'mock'
+  | 'github'
+  | 'notion'
+  | 'jira'
+  | 'linear'
+  | 'pagerduty'
+  | 'google-sheets';
+
+export const ErrorCodes = {
+  INVALID_PARAMS:       { code: 'INVALID_PARAMS',       status: 400, retryable: false },
+  UNAUTHORIZED:         { code: 'UNAUTHORIZED',          status: 401, retryable: false },
+  PROGRAM_NOT_FOUND:    { code: 'PROGRAM_NOT_FOUND',     status: 404, retryable: false },
+  RATE_LIMITED:         { code: 'RATE_LIMITED',          status: 429, retryable: true  },
+  SOURCE_UNAVAILABLE:   { code: 'SOURCE_UNAVAILABLE',    status: 503, retryable: true  },
+  STALE_DATA:           { code: 'STALE_DATA',            status: 200, retryable: false },
+  AI_GENERATION_FAILED: { code: 'AI_GENERATION_FAILED',  status: 500, retryable: true  },
+  NOT_IMPLEMENTED:      { code: 'NOT_IMPLEMENTED',       status: 501, retryable: false },
+  INTERNAL_ERROR:       { code: 'INTERNAL_ERROR',        status: 500, retryable: true  },
 } as const;
 
-export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
+type ErrorCodeKey = keyof typeof ErrorCodes;
 
-export const HttpStatus: Record<ErrorCode, number> = {
-  INVALID_PARAMS: 400,
-  UNAUTHORIZED: 401,
-  PROGRAM_NOT_FOUND: 404,
-  NOT_IMPLEMENTED: 501,
-  RATE_LIMITED: 429,
-  SOURCE_UNAVAILABLE: 502,
-  STALE_DATA: 200,
-  AI_GENERATION_FAILED: 500,
-  INTERNAL_ERROR: 500,
-};
+export class TpmError extends Error {
+  public readonly code: string;
+  public readonly status: number;
+  public readonly retryable: boolean;
 
-export const Retryable: Record<ErrorCode, boolean> = {
-  INVALID_PARAMS: false,
-  UNAUTHORIZED: false,
-  PROGRAM_NOT_FOUND: false,
-  NOT_IMPLEMENTED: false,
-  RATE_LIMITED: true,
-  SOURCE_UNAVAILABLE: true,
-  STALE_DATA: false,
-  AI_GENERATION_FAILED: true,
-  INTERNAL_ERROR: true,
-};
-
-export class ApiError extends Error {
-  constructor(
-    public readonly code: ErrorCode,
-    message: string,
-  ) {
+  constructor(key: ErrorCodeKey, message: string) {
     super(message);
-    this.name = 'ApiError';
+    this.name = 'TpmError';
+    const def = ErrorCodes[key];
+    this.code = def.code;
+    this.status = def.status;
+    this.retryable = def.retryable;
+  }
+
+  static invalidParams(message: string): TpmError {
+    return new TpmError('INVALID_PARAMS', message);
+  }
+
+  static unauthorized(message = 'Unauthorized'): TpmError {
+    return new TpmError('UNAUTHORIZED', message);
+  }
+
+  static programNotFound(id: string): TpmError {
+    return new TpmError('PROGRAM_NOT_FOUND', `Program ${id} not found`);
+  }
+
+  static rateLimited(message = 'Rate limit exceeded — retry after backoff'): TpmError {
+    return new TpmError('RATE_LIMITED', message);
+  }
+
+  static sourceUnavailable(source: string): TpmError {
+    return new TpmError('SOURCE_UNAVAILABLE', `Source unavailable: ${source}. Falling back to mock.`);
+  }
+
+  static staleData(message = 'Cache TTL exceeded and source unavailable — serving last known data'): TpmError {
+    return new TpmError('STALE_DATA', message);
+  }
+
+  static aiGenerationFailed(message = 'Claude failed to generate the status report'): TpmError {
+    return new TpmError('AI_GENERATION_FAILED', message);
+  }
+
+  static notImplemented(feature: string): TpmError {
+    return new TpmError('NOT_IMPLEMENTED', `${feature} is not implemented in v1. Planned for v2.`);
+  }
+
+  static internal(message = 'Internal server error'): TpmError {
+    return new TpmError('INTERNAL_ERROR', message);
   }
 }

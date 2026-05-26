@@ -1,6 +1,6 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { ok, err } from '../shared/response';
-import { ErrorCode } from '../shared/errors';
+import { success, fail } from '../shared/response';
+import { TpmError } from '../shared/errors';
 
 type RiskStatus = 'open' | 'mitigating' | 'closed';
 
@@ -15,15 +15,13 @@ export async function updateRisk(
   programId: string,
   riskId: string,
 ): Promise<APIGatewayProxyResult> {
-  if (!event.body) {
-    return err(ErrorCode.INVALID_PARAMS, 'Request body is required', programId);
-  }
+  if (!event.body) return fail(TpmError.invalidParams('Request body is required'));
 
   let body: UpdateRiskBody;
   try {
     body = JSON.parse(event.body) as UpdateRiskBody;
   } catch {
-    return err(ErrorCode.INVALID_PARAMS, 'Invalid JSON body', programId);
+    return fail(TpmError.invalidParams('Invalid JSON body'));
   }
 
   // Mock mode only in v1
@@ -39,5 +37,5 @@ export async function updateRisk(
     dueDate: null,
   };
 
-  return ok(updated, { programId, source: 'mock' });
+  return success(updated, 'mock');
 }
