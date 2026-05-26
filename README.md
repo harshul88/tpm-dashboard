@@ -246,7 +246,7 @@ Open http://localhost:5173 in your browser. The app uses static mock data — no
 - [x] AWS CDK installed and configured
 
 ### Coming Soon
-- [ ] CDK bootstrap (pending Control Tower update)
+- [ ] CDK deploy (pending AWS Support CloudFront verification for Dev1 account — case filed)
 - [ ] S3 + CloudFront hosting across 3 environments (dev / staging / prod)
 - [ ] Custom domain via Route 53 + ACM
 - [ ] GitHub Actions OIDC — keyless AWS deployments from CI
