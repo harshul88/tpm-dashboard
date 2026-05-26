@@ -1,0 +1,40 @@
+{
+  "_readme": "Copy this file to tpm.config.json and fill in your values. Never commit tpm.config.json directly.",
+  "project": "TPM OS",
+  "version": "1.0.0",
+  "description": "My TPM Dashboard",
+  "programs": [],
+  "defaults": {
+    "dataSources": {
+      "sprintTracker": "mock",
+      "engMetrics": "mock",
+      "roadmap": "mock"
+    },
+    "cache_ttl_minutes": 5,
+    "report_draft_expiry_hours": 24,
+    "data_staleness_warning_days": 7
+  },
+  "integrations": {
+    "github": { "enabled": false, "org": "", "repo": "" },
+    "notion": { "enabled": false, "databaseId": "" },
+    "jira": { "enabled": false, "domain": "", "projectKey": "" },
+    "googleSheets": { "enabled": false, "spreadsheetId": "" },
+    "pagerduty": { "enabled": false }
+  },
+  "hosting": "aws",
+  "infrastructure": "cdk",
+  "environments": {
+    "staging": { "url": "", "bucket": "tpm-dashboard-staging" },
+    "prod": { "url": "", "bucket": "tpm-dashboard-prod" }
+  },
+  "ai": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-6",
+    "report_generation": true,
+    "confidence_thresholds": {
+      "high": 1,
+      "medium": 3,
+      "low": 7
+    }
+  }
+}
