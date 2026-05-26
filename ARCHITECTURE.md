@@ -18,8 +18,8 @@ graph TD
     end
 
     subgraph S3 ["S3 — Static React App"]
-        S3_P["tpm-dashboard-prod"]
-        S3_S["tpm-dashboard-staging"]
+        S3_P["tpm-os-prod"]
+        S3_S["tpm-os-staging"]
     end
 
     subgraph APIGW ["API Gateway  /api/v1/*"]
@@ -37,8 +37,8 @@ graph TD
     end
 
     subgraph DDB ["DynamoDB (us-east-1)"]
-        DDB_C["tpm-dashboard-cache\n5-min TTL"]
-        DDB_P["tpm-dashboard-programs"]
+        DDB_C["tpm-os-cache\n5-min TTL"]
+        DDB_P["tpm-os-programs"]
     end
 
     subgraph External ["External APIs"]
@@ -129,8 +129,8 @@ graph LR
 
     PGM & SPR & MET & RDM & RPT & SYS --> Shared
     RPT --> Claude["Anthropic\nClaude API"]
-    PGM --> DDB_P["DynamoDB\ntpm-dashboard-programs"]
-    SPR & MET & RDM & RPT & SYS --> DDB_C["DynamoDB\ntpm-dashboard-cache"]
+    PGM --> DDB_P["DynamoDB\ntpm-os-programs"]
+    SPR & MET & RDM & RPT & SYS --> DDB_C["DynamoDB\ntpm-os-cache"]
 ```
 
 ### Endpoint Inventory
@@ -215,7 +215,7 @@ sequenceDiagram
 
     note over TPM,DDB: Step 2 — Approve (saves permanently)
     TPM->>RH: POST /programs/123/report/approve { draft_id, edits? }
-    RH->>DDB: PutItem → tpm-dashboard-programs (no TTL)
+    RH->>DDB: PutItem → tpm-os-programs (no TTL)
     RH-->>TPM: { report_id, saved_at }
 ```
 
@@ -226,15 +226,15 @@ sequenceDiagram
 ### AWS Account Structure
 
 ```
-Management Account (975464805664)
+Management Account ([MGMT-ACCOUNT-ID])
 └── Sandbox OU
-    ├── Sandbox (525112566317) — Control Tower managed
-    └── Dev1 (188348131654)   — active deployment target (us-east-1)
+    ├── Sandbox ([SANDBOX-ACCOUNT-ID]) — Control Tower managed
+    └── Dev1 ([DEV1-ACCOUNT-ID])   — active deployment target (us-east-1)
         ├── staging.tpmos.dev
         └── tpmos.dev
 └── Security OU
-    ├── Audit (004580131239)
-    └── Log Archive (041316289265)
+    ├── Audit ([AUDIT-ACCOUNT-ID])
+    └── Log Archive ([LOG-ARCHIVE-ACCOUNT-ID])
 ```
 
 Access is via IAM Identity Center SSO — no static credentials, no root user usage.
@@ -243,25 +243,25 @@ Access is via IAM Identity Center SSO — no static credentials, no root user us
 
 ```mermaid
 graph TD
-    subgraph Dev1 ["AWS Dev1 Account (188348131654) — us-east-1"]
+    subgraph Dev1 ["AWS Dev1 Account ([DEV1-ACCOUNT-ID]) — us-east-1"]
         ACM["ACM Certificate\ntpmos.dev + staging.tpmos.dev"]
         R53["Route 53 Hosted Zone\ntpmos.dev"]
 
         subgraph Staging ["Staging"]
             CF_S["CloudFront\nstaging.tpmos.dev"]
             OAC_S["Origin Access Control"]
-            S3_S["S3: tpm-dashboard-staging\nversioned · AES-256 · RETAIN"]
+            S3_S["S3: tpm-os-staging\nversioned · AES-256 · RETAIN"]
         end
 
         subgraph Prod ["Production"]
             CF_P["CloudFront\ntpmos.dev"]
             OAC_P["Origin Access Control"]
-            S3_P["S3: tpm-dashboard-prod\nversioned · AES-256 · RETAIN"]
+            S3_P["S3: tpm-os-prod\nversioned · AES-256 · RETAIN"]
         end
 
         subgraph Data ["Data Layer"]
-            DDB_C["DynamoDB: tpm-dashboard-cache"]
-            DDB_P["DynamoDB: tpm-dashboard-programs"]
+            DDB_C["DynamoDB: tpm-os-cache"]
+            DDB_P["DynamoDB: tpm-os-programs"]
         end
 
         subgraph CI ["CI/CD Identity"]
@@ -270,10 +270,10 @@ graph TD
         end
 
         subgraph SSM ["SSM Parameters (4)"]
-            SSM1["/tpm-dashboard/staging/cloudfront-id"]
-            SSM2["/tpm-dashboard/staging/bucket-name"]
-            SSM3["/tpm-dashboard/prod/cloudfront-id"]
-            SSM4["/tpm-dashboard/prod/bucket-name"]
+            SSM1["/tpm-os/staging/cloudfront-id"]
+            SSM2["/tpm-os/staging/bucket-name"]
+            SSM3["/tpm-os/prod/cloudfront-id"]
+            SSM4["/tpm-os/prod/bucket-name"]
         end
     end
 
@@ -288,9 +288,9 @@ graph TD
 
 | Resource | Name | Notes |
 |----------|------|-------|
-| S3 Bucket | `tpm-dashboard-staging` | OAC-only, versioned, RETAIN on destroy |
-| S3 Bucket | `tpm-dashboard-prod` | OAC-only, versioned, RETAIN on destroy |
-| S3 Bucket | `tpm-dashboard-dev` | Local sync target only, no CloudFront |
+| S3 Bucket | `tpm-os-staging` | OAC-only, versioned, RETAIN on destroy |
+| S3 Bucket | `tpm-os-prod` | OAC-only, versioned, RETAIN on destroy |
+| S3 Bucket | `tpm-os-dev` | Local sync target only, no CloudFront |
 | CloudFront Distribution | staging.tpmos.dev | HTTPS, TLS 1.2+, Price Class 100, SPA 404→200 |
 | CloudFront Distribution | tpmos.dev | HTTPS, TLS 1.2+, Price Class 100, SPA 404→200 |
 | Origin Access Control | (staging) | SigV4 signing, restricts S3 to CloudFront only |
@@ -300,12 +300,12 @@ graph TD
 | Route 53 A Record | `staging.tpmos.dev` | Alias → staging CloudFront |
 | GitHub OIDC Provider | `token.actions.githubusercontent.com` | Keyless federation |
 | IAM Role | `GitHubActionsDeployRole` | Scoped to `repo:harshul88/tpm-dashboard:*` |
-| SSM Parameter | `/tpm-dashboard/staging/cloudfront-id` | Read by CI at deploy time |
-| SSM Parameter | `/tpm-dashboard/staging/bucket-name` | Read by CI at deploy time |
-| SSM Parameter | `/tpm-dashboard/prod/cloudfront-id` | Read by CI at deploy time |
-| SSM Parameter | `/tpm-dashboard/prod/bucket-name` | Read by CI at deploy time |
-| DynamoDB Table | `tpm-dashboard-cache` | pk=`key`, TTL attribute enabled |
-| DynamoDB Table | `tpm-dashboard-programs` | pk=`id` |
+| SSM Parameter | `/tpm-os/staging/cloudfront-id` | Read by CI at deploy time |
+| SSM Parameter | `/tpm-os/staging/bucket-name` | Read by CI at deploy time |
+| SSM Parameter | `/tpm-os/prod/cloudfront-id` | Read by CI at deploy time |
+| SSM Parameter | `/tpm-os/prod/bucket-name` | Read by CI at deploy time |
+| DynamoDB Table | `tpm-os-cache` | pk=`key`, TTL attribute enabled |
+| DynamoDB Table | `tpm-os-programs` | pk=`id` |
 
 ### Promotion Pipeline
 
@@ -443,7 +443,7 @@ interface Program {
 
 | Aspect | Detail |
 |--------|--------|
-| Store | DynamoDB `tpm-dashboard-cache`, pk = cache key string |
+| Store | DynamoDB `tpm-os-cache`, pk = cache key string |
 | TTL | 5 minutes (from `tpm.config.json`, overridable) |
 | Key format | `{programId}:{dashboard}:{endpoint}` or `global:programs` |
 | TTL enforcement | Lambda reads `Item.ttl` field and rejects expired entries |
