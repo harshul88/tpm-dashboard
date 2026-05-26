@@ -1,11 +1,16 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import crypto from 'node:crypto';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, GetCommand, PutCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
 import { success, fail } from '../shared/response';
 import { TpmError } from '../shared/errors';
-import crypto from 'node:crypto';
+
+const TABLE  = process.env.PROGRAMS_TABLE_NAME ?? 'tpm-dashboard-programs';
+const dynamo = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
 interface ApproveReportBody {
   report_id: string;
-  edits?: string | null;
+  edits?:    Record<string, unknown> | null;
 }
 
 export async function approveReport(
@@ -21,31 +26,67 @@ export async function approveReport(
     return fail(TpmError.invalidParams('Invalid JSON body'));
   }
 
-  if (!body.report_id) {
-    return fail(TpmError.invalidParams('report_id is required'));
+  if (!body.report_id) return fail(TpmError.invalidParams('report_id is required'));
+
+  // Fetch draft
+  let draft: Record<string, unknown> | undefined;
+  try {
+    const result = await dynamo.send(new GetCommand({ TableName: TABLE, Key: { id: body.report_id } }));
+    draft = result.Item as Record<string, unknown> | undefined;
+  } catch (e) {
+    console.error('[report-handler] DynamoDB GetCommand failed:', e);
+    return fail(TpmError.internal('Failed to fetch draft'));
   }
 
-  // TODO: fetch draft from temp store, verify not expired, apply edits, persist to history
-  const now = new Date().toISOString();
-  const approvedReport = {
-    report_id:   crypto.randomUUID(),
-    status:      'approved',
-    approvedAt:  now,
-    generatedAt: now,
-    weekEnding:  now,
-    ragStatus:   'green',
-    executiveSummary: body.edits
-      ? `[TPM edits applied] ${body.edits}`
-      : 'Program is on track. Sprint at 60% completion with no critical blockers.',
-    keyAccomplishments:        [],
-    blockersNeedingEscalation: [],
-    riskSummary:               [],
-    upcomingMilestones:        [],
-    exportFormats: {
-      markdown: '# Weekly Status Report\n\n**Status:** Green\n',
-      pdfUrl: null,
-    },
-  };
+  if (!draft) return fail(TpmError.invalidParams(`Draft ${body.report_id} not found`));
+  if (draft['type'] !== 'report_draft') return fail(TpmError.invalidParams(`${body.report_id} is not a report draft`));
+  if (draft['program_id'] !== programId) return fail(TpmError.invalidParams(`Draft does not belong to program ${programId}`));
 
-  return success({ report: approvedReport }, 'mock');
+  // Verify draft not expired
+  const expiresAt = new Date(draft['expires_at'] as string);
+  if (expiresAt.getTime() < Date.now()) {
+    return fail(TpmError.invalidParams('Draft has expired — regenerate the report'));
+  }
+
+  // Build approved record (no TTL field — permanent)
+  const now        = new Date();
+  const approvedId = crypto.randomUUID();
+
+  const approved: Record<string, unknown> = {
+    id:          approvedId,
+    type:        'report_approved',
+    program_id:  programId,
+    report:      draft['report'],
+    audience:    draft['audience'],
+    tone:        draft['tone'],
+    week_ending: draft['week_ending'],
+    confidence:  draft['confidence'],
+    created_at:  draft['created_at'],
+    approved_at: now.toISOString(),
+  };
+  if (body.edits) approved['edits'] = body.edits;
+
+  try {
+    await dynamo.send(new PutCommand({ TableName: TABLE, Item: approved }));
+  } catch (e) {
+    console.error('[report-handler] DynamoDB PutCommand failed:', e);
+    return fail(TpmError.internal('Failed to save approved report'));
+  }
+
+  // Delete draft — non-fatal; DynamoDB TTL will clean it up if this fails
+  try {
+    await dynamo.send(new DeleteCommand({ TableName: TABLE, Key: { id: body.report_id } }));
+  } catch (e) {
+    console.error('[report-handler] DynamoDB DeleteCommand failed (draft will expire via TTL):', e);
+  }
+
+  return success(
+    {
+      report_id:   approvedId,
+      status:      'approved',
+      approved_at: now.toISOString(),
+      program_id:  programId,
+    },
+    'mock',
+  );
 }

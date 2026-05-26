@@ -25,7 +25,11 @@ export const handler = async (
     return fail(TpmError.invalidParams(`No route: ${httpMethod} ${event.path}`));
   } catch (e) {
     if (e instanceof TpmError) return fail(e);
-    if (e instanceof Error)    return fail(TpmError.internal(e.message));
+    if (e instanceof Error) {
+      console.error('[report-handler] Unhandled error:', e.message, e.stack);
+      return fail(TpmError.internal(e.message));
+    }
+    console.error('[report-handler] Unknown throw:', e);
     return fail(TpmError.internal('Unknown error'));
   }
 };
