@@ -1,12 +1,21 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb';
+import crypto from 'node:crypto';
 import { success, fail } from '../shared/response';
 import { TpmError } from '../shared/errors';
-import crypto from 'node:crypto';
+import { invalidate } from '../shared/cache';
+import type { Program, ProgramType } from '../shared/models';
+import { PROGRAM_TEMPLATES } from '../shared/models';
+
+const TABLE       = process.env.PROGRAMS_TABLE_NAME ?? 'tpm-dashboard-programs';
+const VALID_TYPES: ProgramType[] = ['product_dev', 'compliance', 'migration', 'initiative'];
+const dynamo      = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 
 interface CreateProgramBody {
-  name: string;
-  type: 'product-development' | 'compliance-risk' | 'platform-migration' | 'initiative-okr';
-  dataMode: 'mock' | 'live';
+  name:         string;
+  type:         ProgramType;
+  description?: string;
 }
 
 export async function createProgram(
@@ -21,19 +30,27 @@ export async function createProgram(
     return fail(TpmError.invalidParams('Invalid JSON body'));
   }
 
-  if (!body.name || !body.type || !body.dataMode) {
-    return fail(TpmError.invalidParams('name, type, and dataMode are required'));
+  if (!body.name?.trim()) {
+    return fail(TpmError.invalidParams('name is required'));
+  }
+  if (!body.type || !VALID_TYPES.includes(body.type)) {
+    return fail(TpmError.invalidParams(`type must be one of: ${VALID_TYPES.join(', ')}`));
   }
 
-  // TODO: persist to DynamoDB programs table
-  const program = {
-    id: crypto.randomUUID(),
-    name: body.name,
-    type: body.type,
-    dataMode: body.dataMode,
-    createdAt: new Date().toISOString(),
-    configPath: 'tpm.config.json',
+  const now      = new Date().toISOString();
+  const template = PROGRAM_TEMPLATES[body.type];
+  const program: Program = {
+    ...template,
+    id:          crypto.randomUUID(),
+    name:        body.name.trim(),
+    description: body.description?.trim() ?? template.description,
+    created_at:  now,
+    updated_at:  now,
   };
+
+  await dynamo.send(new PutCommand({ TableName: TABLE, Item: program }));
+  // Bust the programs list cache so the next GET /programs reflects this new entry
+  await invalidate('global:programs');
 
   return success(program, 'mock');
 }
