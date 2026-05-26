@@ -1,5 +1,6 @@
 export type Source =
   | 'mock'
+  | 'system'
   | 'github'
   | 'notion'
   | 'jira'
