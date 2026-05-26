@@ -225,6 +225,10 @@ sequenceDiagram
 
 ### AWS Account Structure
 
+> **Note:** Account IDs are redacted in this public document.
+> Actual IDs are stored in tpm.config.json (not committed)
+> and AWS SSM Parameter Store.
+
 ```
 Management Account ([MGMT-ACCOUNT-ID])
 └── Sandbox OU
@@ -266,7 +270,7 @@ graph TD
 
         subgraph CI ["CI/CD Identity"]
             OIDC["GitHub Actions OIDC Provider\ntoken.actions.githubusercontent.com"]
-            ROLE["IAM Role: GitHubActionsDeployRole\nS3 + CloudFront + SSM read"]
+            ROLE["IAM Role: TpmOsDeployRole\nS3 + CloudFront + SSM read"]
         end
 
         subgraph SSM ["SSM Parameters (4)"]
@@ -299,7 +303,7 @@ graph TD
 | Route 53 A Record | `tpmos.dev` | Alias → prod CloudFront |
 | Route 53 A Record | `staging.tpmos.dev` | Alias → staging CloudFront |
 | GitHub OIDC Provider | `token.actions.githubusercontent.com` | Keyless federation |
-| IAM Role | `GitHubActionsDeployRole` | Scoped to `repo:harshul88/tpm-dashboard:*` |
+| IAM Role | `TpmOsDeployRole` | Scoped to `repo:harshul88/tpm-dashboard:*` |
 | SSM Parameter | `/tpm-os/staging/cloudfront-id` | Read by CI at deploy time |
 | SSM Parameter | `/tpm-os/staging/bucket-name` | Read by CI at deploy time |
 | SSM Parameter | `/tpm-os/prod/cloudfront-id` | Read by CI at deploy time |
